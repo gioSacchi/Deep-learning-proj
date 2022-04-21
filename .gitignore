@@ -1,3 +1,4 @@
+pretrained-models/*
 .history
 *.ipynb
 ./logs*
