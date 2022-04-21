@@ -133,5 +133,5 @@ if __name__ == "__main__":
 
     log.info(f"Saving results to {str(SAVE_DIR)}")
     np.save(SAVE_DIR / "results.npy", out)
-    np.save(SAVE_DIR / "query_embeddings.npy", embeddings)
+    np.save(SAVE_DIR / "query_embeddings.npy", embeddings.cpu())
     np.save(SAVE_DIR / "query_paths.npy", paths)
