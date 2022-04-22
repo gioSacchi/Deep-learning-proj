@@ -73,7 +73,7 @@ if __name__ == "__main__":
         raise RuntimeError("Lenght of dataloader = 0")
 
     ### Build model
-    model = CTLModel.load_from_checkpoint(cfg.MODEL.PRETRAIN_PATH)
+    model = CTLModel.load_from_checkpoint(cfg.MODEL.PRETRAIN_PATH, map_location=torch.device('cpu'))
     use_cuda = True if torch.cuda.is_available() and cfg.GPU_IDS else False
 
     ### Inference
