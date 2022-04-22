@@ -105,7 +105,7 @@ if __name__ == "__main__":
         embeddings = torch.from_numpy(embeddings)
 
     # Use GPU if available
-    device = torch.device("cuda") if cfg.GPU_IDS else torch.device("cpu")
+    device = torch.device("cuda") if cfg.GPU_IDS and torch.cuda.is_available() else torch.device("cpu")
     embeddings_gallery = embeddings_gallery.to(device)
     embeddings = embeddings.to(device)
 
