@@ -101,7 +101,7 @@ def make_inference_data_loader(cfg, path, dataset_class):
     return val_loader
 
 
-def _inference(model, batch, use_cuda, normalize_with_bn=True):
+def _inference(model, batch, use_cuda, normalize_with_bn=False):
     model.eval()
     with torch.no_grad():
         data, _, filename = batch
