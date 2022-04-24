@@ -3,6 +3,7 @@ import logging
 import os
 import sys
 from pathlib import Path
+import time
 
 import numpy as np
 import torch
@@ -83,10 +84,14 @@ if __name__ == "__main__":
 
     ### Inference
     log.info("Running inference")
+    start = time.time()
     embeddings, paths = run_inference(
         model, val_loader, cfg, print_freq=args.print_freq, use_cuda=True
     )
+    end = time.time()
+    print("Inference: ", end - start)
 
+    start = time.time()
     ### Load gallery data
     LOAD_PATH = Path(args.gallery_data)
     embeddings_gallery = torch.from_numpy(
@@ -103,14 +108,18 @@ if __name__ == "__main__":
         )
     else:
         embeddings = torch.from_numpy(embeddings)
+    end = time.time()
+    print("Load gallery: ", end - start)
 
     use_gpu = cfg.GPU_IDS and torch.cuda.is_available()
 
     # Use GPU if available
     device = torch.device("cuda") if use_gpu else torch.device("cpu")
+    print(device)
     embeddings_gallery = embeddings_gallery.to(device)
     embeddings = embeddings.to(device)
 
+    start = time.time()
     ### Calculate similarity
     log.info("Calculating distance and getting the most similar ids per query")
     dist_func = get_dist_func(cfg.SOLVER.DISTANCE_FUNC)
@@ -119,6 +128,8 @@ if __name__ == "__main__":
     else:    
         distmat = dist_func(x=embeddings, y=embeddings_gallery).cpu().numpy()
     indices = np.argsort(distmat, axis=1)
+    end = time.time()
+    print("Similarty check: ", end - start)
 
     ### Constrain the results to only topk most similar ids
     indices = indices[:, : args.topk] if args.topk else indices
