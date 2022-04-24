@@ -82,11 +82,14 @@ if __name__ == "__main__":
     ### Build model
     model = CTLModel.load_from_checkpoint(cfg.MODEL.PRETRAIN_PATH)
 
+    use_gpu = cfg.GPU_IDS and torch.cuda.is_available()
+
+
     ### Inference
     log.info("Running inference")
     start = time.time()
     embeddings, paths = run_inference(
-        model, val_loader, cfg, print_freq=args.print_freq, use_cuda=True
+        model, val_loader, cfg, print_freq=args.print_freq, use_cuda=use_gpu
     )
     end = time.time()
     print("Inference: ", end - start)
@@ -111,7 +114,6 @@ if __name__ == "__main__":
     end = time.time()
     print("Load gallery: ", end - start)
 
-    use_gpu = cfg.GPU_IDS and torch.cuda.is_available()
 
     # Use GPU if available
     device = torch.device("cuda") if use_gpu else torch.device("cpu")
