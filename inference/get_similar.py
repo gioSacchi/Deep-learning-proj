@@ -138,8 +138,5 @@ if __name__ == "__main__":
 
     log.info(f"Saving results to {str(SAVE_DIR)}")
     np.save(SAVE_DIR / "results.npy", out)
-    if use_gpu:
-        np.save(SAVE_DIR / "query_embeddings.npy", embeddings)
-    else:
-        np.save(SAVE_DIR / "query_embeddings.npy", embeddings.cpu())
+    np.save(SAVE_DIR / "query_embeddings.npy", embeddings.cpu())
     np.save(SAVE_DIR / "query_paths.npy", paths)
