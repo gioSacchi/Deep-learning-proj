@@ -115,7 +115,7 @@ if __name__ == "__main__":
     log.info("Calculating distance and getting the most similar ids per query")
     dist_func = get_dist_func(cfg.SOLVER.DISTANCE_FUNC)
     if use_gpu:
-        distmat = dist_func(x=embeddings, y=embeddings_gallery)
+        distmat = dist_func(x=embeddings, y=embeddings_gallery).cpu().numpy()
     else:    
         distmat = dist_func(x=embeddings, y=embeddings_gallery).cpu().numpy()
     indices = np.argsort(distmat, axis=1)
