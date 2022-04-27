@@ -50,7 +50,7 @@ def main(_argv):
     # calculate cosine distance metric
     metric = nn_matching.NearestNeighborDistanceMetric("cosine", max_cosine_distance, nn_budget)
     # initialize tracker
-    tracker = Tracker(metric)
+    tracker = Tracker(metric, max_age=500)
 
     # load configuration for object detector
     config = ConfigProto()
