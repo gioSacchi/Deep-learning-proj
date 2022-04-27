@@ -53,4 +53,4 @@ def initializer(weights='./checkpoints/yolov4-tiny-416', model='yolov4', video=0
         saved_model_loaded = tf.saved_model.load(FLAGS['weights'], tags=[tag_constants.SERVING])
         infer = saved_model_loaded.signatures['serving_default']
     
-    return tracker, infer, interpreter, encoder, FLAGS
+    return tracker, infer, encoder, FLAGS
