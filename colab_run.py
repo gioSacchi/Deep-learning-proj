@@ -17,13 +17,13 @@ from deep_sort import preprocessing, nn_matching
 from deep_sort.tracker import Tracker
 from tools import generate_detections as gdet
 
-def initializer(_argv):
+def initializer(weights='./checkpoints/yolov4-tiny-416', model='yolov4', video=0, tiny=True):
     flags.DEFINE_string('framework', 'tf', '(tf, tflite, trt')
-    flags.DEFINE_string('weights', './checkpoints/yolov4-416', 'path to weights file')
+    flags.DEFINE_string('weights', './checkpoints/yolov4-tiny-416', 'path to weights file')
     flags.DEFINE_integer('size', 416, 'resize images to')
-    flags.DEFINE_boolean('tiny', False, 'yolo or yolo-tiny')
-    flags.DEFINE_string('model', 'yolov4', 'yolov3 or yolov4')
-    flags.DEFINE_string('video', './data/video/test.mp4', 'path to input video or set to 0 for webcam')
+    flags.DEFINE_boolean('tiny', tiny, 'yolo or yolo-tiny')
+    flags.DEFINE_string('model', model, 'yolov3 or yolov4')
+    flags.DEFINE_string('video', video, 'path to input video or set to 0 for webcam')
     flags.DEFINE_string('output', None, 'path to output video')
     flags.DEFINE_string('output_format', 'XVID', 'codec used in VideoWriter when saving video to file')
     flags.DEFINE_float('iou', 0.45, 'iou threshold')
