@@ -18,19 +18,8 @@ from deep_sort.tracker import Tracker
 from tools import generate_detections as gdet
 
 def initializer(weights='./checkpoints/yolov4-tiny-416', model='yolov4', video=0, tiny=True):
-    flags.DEFINE_string('framework', 'tf', '(tf, tflite, trt')
-    flags.DEFINE_string('weights', './checkpoints/yolov4-tiny-416', 'path to weights file')
-    flags.DEFINE_integer('size', 416, 'resize images to')
-    flags.DEFINE_boolean('tiny', tiny, 'yolo or yolo-tiny')
-    flags.DEFINE_string('model', model, 'yolov3 or yolov4')
-    flags.DEFINE_string('video', video, 'path to input video or set to 0 for webcam')
-    flags.DEFINE_string('output', None, 'path to output video')
-    flags.DEFINE_string('output_format', 'XVID', 'codec used in VideoWriter when saving video to file')
-    flags.DEFINE_float('iou', 0.45, 'iou threshold')
-    flags.DEFINE_float('score', 0.50, 'score threshold')
-    flags.DEFINE_boolean('dont_show', False, 'dont show video output')
-    flags.DEFINE_boolean('info', False, 'show detailed info of tracked objects')
-    flags.DEFINE_boolean('count', False, 'count objects being tracked on screen')
+    FLAGS = {"weights": weights, "framework":'tf', 'size': 416, 'tiny': tiny, 'model': model, 'video': video, 'output': None, 'output_format': 'XVID', 
+                    'iou': 0.45, 'score': 0.50, 'dont_show': False, 'info': False, 'count': False}
 
     # Definition of the parameters
     max_cosine_distance = 0.4
@@ -47,13 +36,13 @@ def initializer(weights='./checkpoints/yolov4-tiny-416', model='yolov4', video=0
     # load configuration for object detector
     config = ConfigProto()
     config.gpu_options.allow_growth = True
-    session = InteractiveSession(config=config)
-    STRIDES, ANCHORS, NUM_CLASS, XYSCALE = utils.load_config(FLAGS)
-    video_path = FLAGS.video
+    #session = InteractiveSession(config=config)
+    #STRIDES, ANCHORS, NUM_CLASS, XYSCALE = utils.load_config(FLAGS)
+    #video_path = FLAGS['video']
 
     # load tflite model if flag is set
-    if FLAGS.framework == 'tflite':
-        interpreter = tf.lite.Interpreter(model_path=FLAGS.weights)
+    if FLAGS['framework'] == 'tflite':
+        interpreter = tf.lite.Interpreter(model_path=FLAGS['weights'])
         interpreter.allocate_tensors()
         input_details = interpreter.get_input_details()
         output_details = interpreter.get_output_details()
@@ -61,7 +50,7 @@ def initializer(weights='./checkpoints/yolov4-tiny-416', model='yolov4', video=0
         print(output_details)
     # otherwise load standard tensorflow saved model
     else:
-        saved_model_loaded = tf.saved_model.load(FLAGS.weights, tags=[tag_constants.SERVING])
+        saved_model_loaded = tf.saved_model.load(FLAGS['weights'], tags=[tag_constants.SERVING])
         infer = saved_model_loaded.signatures['serving_default']
     
     return tracker, infer, interpreter, encoder, FLAGS
