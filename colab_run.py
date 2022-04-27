@@ -17,8 +17,8 @@ from deep_sort import preprocessing, nn_matching
 from deep_sort.tracker import Tracker
 from tools import generate_detections as gdet
 
-def initializer(weights='./checkpoints/yolov4-tiny-416', model='yolov4', video=0, tiny=True):
-    FLAGS = {"weights": weights, "framework":'tf', 'size': 416, 'tiny': tiny, 'model': model, 'video': video, 'output': None, 'output_format': 'XVID', 
+def initializer(weights='./checkpoints/yolov4-tiny-416', model='yolov4', video=0, tiny=True, size=416):
+    FLAGS = {"weights": weights, "framework":'tf', 'size': size, 'tiny': tiny, 'model': model, 'video': video, 'output': None, 'output_format': 'XVID', 
                     'iou': 0.45, 'score': 0.50, 'dont_show': False, 'info': False, 'count': False}
 
     # Definition of the parameters
