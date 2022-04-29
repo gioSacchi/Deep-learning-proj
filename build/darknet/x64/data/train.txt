@@ -1,0 +1,1 @@
+relative paths to images data/obj/img1.jpg
