@@ -1,7 +1,7 @@
 import tensorflow as tf
 from absl import app, flags, logging
 from absl.flags import FLAGS
-from core.yolov4 import YOLO, decode, filter_boxes
+from convert_darknet.yolov4 import YOLO, decode, filter_boxes
 import core.utils as utils
 from core.config import cfg
 
