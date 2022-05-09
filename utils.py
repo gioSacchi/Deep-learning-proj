@@ -48,7 +48,7 @@ def get_image_and_annotation(args):
     coco = COCO(args.anno)
 
     # list of category that you want to train
-    target = ['car', 'motorcycle']
+    target = ['person']
 
     create_obj_name_file(target)
     # need a mapping table to find the correspondence between coco catId and custom catId
@@ -101,18 +101,25 @@ def get_image_and_annotation(args):
 
 def create_train_txtfile(args):
     _, _, filenames = next(walk(args.img_out))
-    with open('train.txt', 'w') as f:
-        for filename in filenames:
-            if ".jpg" in filename:
-                line = f'data/obj/{filename}\n'
-                f.write(line)
-
+    if args.test is False:
+        with open('train.txt', 'w') as f:
+            for filename in filenames:
+                if ".jpg" in filename:
+                    line = f'data/obj/{filename}\n'
+                    f.write(line)
+    else:
+        with open('test.txt', 'w') as f:
+            for filename in filenames:
+                if ".jpg" in filename:
+                    line = f'data/test/{filename}\n'
+                    f.write(line)
 
 def arg_parse():
     ap = argparse.ArgumentParser()
     ap.add_argument('--anno', help='path to COCO annotation file', default=f'instances_train2017.json')
     ap.add_argument('--img_out', help='path to store COCO images', default=f'image')
     ap.add_argument('--label_out', help='path to store label files', default=f'label')
+    ap.add_argument('--test', help='true for test and false for train', default=False)
     args = ap.parse_args()
     return args
 
