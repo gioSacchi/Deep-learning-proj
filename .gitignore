@@ -1,3 +1,16 @@
 *.pyc
 *.pb
 *.pyo
+data/yolov4-tiny.weights
+checkpoints/yolov4-tiny-416/variables/variables.data-00000-of-00001
+checkpoints/yolov4-tiny-416/variables/variables.index
+core/__pycache__/config.cpython-37.pyc
+core/__pycache__/utils.cpython-37.pyc
+deep_sort/__pycache__/__init__.cpython-37.pyc
+deep_sort/__pycache__/detection.cpython-37.pyc
+deep_sort/__pycache__/iou_matching.cpython-37.pyc
+deep_sort/__pycache__/kalman_filter.cpython-37.pyc
+deep_sort/__pycache__/linear_assignment.cpython-37.pyc
+deep_sort/__pycache__/nn_matching.cpython-37.pyc
+deep_sort/__pycache__/track.cpython-37.pyc
+deep_sort/__pycache__/tracker.cpython-37.pyc
