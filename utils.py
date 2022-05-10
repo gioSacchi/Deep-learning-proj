@@ -1,6 +1,6 @@
 from pycocotools.coco import COCO
 import requests
-import cv2
+import random
 import os
 from os import walk
 import argparse
@@ -62,8 +62,12 @@ def get_image_and_annotation(args):
 
     # get all image id contain the target category
     imgIds = coco.getImgIds(catIds=catIds)
+    #sampling
+    if args.nr_elem is not False and args.nr_elem.is_integer():
+        imgIds = random.sample(imgIds, args.nr_elem)
     #imgIds = get_imageIds(catIds=catIds, mode='union')
     total_num = len(imgIds)
+    
     count = 0
 
     # get all image information by image id
@@ -120,6 +124,7 @@ def arg_parse():
     ap.add_argument('--img_out', help='path to store COCO images', default=f'image')
     ap.add_argument('--label_out', help='path to store label files', default=f'label')
     ap.add_argument('--test', help='true for test and false for train', default=False)
+    ap.add_argument('--nr_elem', help='max number of elements to sample, false imples all elem i.e. no max', default=False)
     args = ap.parse_args()
     return args
 
