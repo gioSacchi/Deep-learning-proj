@@ -63,11 +63,11 @@ def get_image_and_annotation(args):
     # get all image id contain the target category
     imgIds = coco.getImgIds(catIds=catIds)
     #sampling
-    if args.nr_elem is not False and args.nr_elem.is_integer():
-        imgIds = random.sample(imgIds, args.nr_elem)
+    if args.nr_elem is not False:
+        imgIds = random.sample(imgIds, int(args.nr_elem))
     #imgIds = get_imageIds(catIds=catIds, mode='union')
     total_num = len(imgIds)
-    
+
     count = 0
 
     # get all image information by image id
