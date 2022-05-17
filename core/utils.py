@@ -95,7 +95,7 @@ def format_boxes(bboxes, image_height, image_width):
         xmax = int(box[3] * image_width)
         width = xmax - xmin
         height = ymax - ymin
-        box[0], box[1], box[2], box[3] = xmin, ymin, width, height
+        box[0], box[1], box[2], box[3] = xmin, ymin, xmax, ymax
     return bboxes
 
 def bbox_iou(bboxes1, bboxes2):

@@ -42,8 +42,6 @@ def loop_through_people(frame, keypoints_with_scores, confidence_threshold, boun
         if person[6][0] > person[8][0] and person[8][0] > person[10][0]:
             if draw_box(frame,bounding_boxes[i],confidence_threshold):
                 return bounding_boxes[i][0]
-                
-
 
 def draw_box(frame,bounding_boxes,confidence_threshold):
     y, x, confidence = frame.shape
@@ -53,6 +51,41 @@ def draw_box(frame,bounding_boxes,confidence_threshold):
     if confidence > confidence_threshold:
         cv2.rectangle(frame, (int(xmin), int(ymin)), (int(xmax), int(ymax)), (0,255,0), 3)
         return True
+
+def bb_intersection_over_union(boxA, boxB):
+    # determine the (x, y)-coordinates of the intersection rectangle
+    xA = max(boxA[0], boxB[0])
+    yA = max(boxA[1], boxB[1])
+    xB = min(boxA[2], boxB[2])
+    yB = min(boxA[3], boxB[3])
+
+    # compute the area of intersection rectangle
+    interArea = abs(max((xB - xA, 0)) * max((yB - yA), 0))
+    if interArea == 0:
+        return 0
+    # compute the area of both the prediction and ground-truth
+    # rectangles
+    boxAArea = abs((boxA[2] - boxA[0]) * (boxA[3] - boxA[1]))
+    boxBArea = abs((boxB[2] - boxB[0]) * (boxB[3] - boxB[1]))
+
+    # compute the intersection over union by taking the intersection
+    # area and dividing it by the sum of prediction + ground-truth
+    # areas - the interesection area
+    iou = interArea / float(boxAArea + boxBArea - interArea)
+
+    # return the intersection over union value
+    return iou
+
+def get_max_iou_track(reinit_box, tracks):
+    max_iou = 0
+    reinit_track = None
+    for track in tracks:
+        iou = bb_intersection_over_union(track.to_tlbr(), reinit_box)
+        if iou > max_iou:
+            max_iou = iou
+            reinit_track = track
+    print("Max IOU:", max_iou)
+    return reinit_track
 
 def main(_argv):
     # Definition of the parameters
@@ -89,6 +122,7 @@ def main(_argv):
 
 
     frame_num = 0
+    max_iou_track = None
     # while video is running
     while True:
         return_value, frame = vid.read()
@@ -105,7 +139,7 @@ def main(_argv):
         image_data = image_data[np.newaxis, ...].astype(np.float32)
         # start_time = time.time()
 
-        movenet_frame = tf.image.resize_with_crop_or_pad(tf.expand_dims(movenet_frame, axis=0), 384, 640)
+        movenet_frame = tf.image.resize_with_pad(tf.expand_dims(movenet_frame, axis=0), input_size, input_size)
         movenet_frame = tf.cast(movenet_frame, dtype=tf.int32)
         movenet_results = movenet(movenet_frame)
         
@@ -143,10 +177,6 @@ def main(_argv):
         # format bounding boxes from normalized ymin, xmin, ymax, xmax ---> xmin, ymin, width, height
         original_h, original_w, _ = frame.shape
         bboxes = utils.format_boxes(bboxes, original_h, original_w)
-
-        if reinit_bboxes is not None:
-            reinit_bboxes = utils.format_boxes([reinit_bboxes[0:4]], original_h, original_w)[0]
-
 
         # store all predictions in one parameter for simplicity when calling functions
         pred_bbox = [bboxes, scores, classes, num_objects]
@@ -199,14 +229,22 @@ def main(_argv):
         tracker.update(detections)
         # print("Tracker: ", (time.time() - track_time))
 
+        if reinit_bboxes is not None:
+            reinit_bboxes = utils.format_boxes([reinit_bboxes[0:4]], original_h, original_w)[0]
+            max_iou_track = get_max_iou_track(reinit_bboxes, tracker.tracks)
+
         # update tracks
-        for track in tracker.tracks:
+        #for track in tracker.tracks:
+        if max_iou_track:
+            track = max_iou_track
             if not track.is_confirmed(): #or track.track_id != 1: # or track.time_since_update > 1:
-                continue 
+                continue
+            #if not track.track_id == saved_id:
+            #    continue
             bbox = track.to_tlbr()
             class_name = track.get_class()
-            print(reinit_bboxes)
-            print(bbox)
+            print("reinit:", reinit_bboxes)
+            print("bbox:", bbox)
             
         # draw bbox on screen
             color = colors[int(track.track_id) % len(colors)]
