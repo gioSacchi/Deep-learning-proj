@@ -3,6 +3,7 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import time
 import tensorflow as tf
+tf.config.optimizer.set_jit(True)
 physical_devices = tf.config.experimental.list_physical_devices('GPU')
 if len(physical_devices) > 0:
     tf.config.experimental.set_memory_growth(physical_devices[0], True)
@@ -21,6 +22,8 @@ from deep_sort import nn_matching
 from deep_sort.detection import Detection
 from deep_sort.tracker import Tracker
 from tools import generate_detections as gdet
+
+
 flags.DEFINE_string('weights', './checkpoints/yolov4-416',
                     'path to weights file')
 flags.DEFINE_integer('size', 416, 'resize images to')
@@ -32,6 +35,24 @@ flags.DEFINE_float('iou', 0.45, 'iou threshold')
 flags.DEFINE_float('score', 0.50, 'score threshold')
 flags.DEFINE_boolean('dont_show', False, 'dont show video output')
 flags.DEFINE_boolean('info', False, 'show detailed info of tracked objects')
+
+def loop_through_people(frame, keypoints_with_scores, confidence_threshold, bounding_boxes):
+    for i, person in enumerate(keypoints_with_scores):
+        # Check if right arm is raised    1
+        if person[6][0] > person[8][0] and person[8][0] > person[10][0]:
+            if draw_box(frame,bounding_boxes[i],confidence_threshold):
+                return bounding_boxes[i][0]
+                
+
+
+def draw_box(frame,bounding_boxes,confidence_threshold):
+    y, x, confidence = frame.shape
+    shaped = np.squeeze(np.multiply(bounding_boxes[0], [y,x,y,x,1]))
+    ymin, xmin, ymax, xmax, confidence = shaped
+
+    if confidence > confidence_threshold:
+        cv2.rectangle(frame, (int(xmin), int(ymin)), (int(xmax), int(ymax)), (0,255,0), 3)
+        return True
 
 def main(_argv):
     # Definition of the parameters
@@ -56,6 +77,10 @@ def main(_argv):
     saved_model_loaded = tf.saved_model.load(FLAGS.weights, tags=[tag_constants.SERVING])
     infer = saved_model_loaded.signatures['serving_default']
 
+    # loading movenet model
+    movenet_model = tf.saved_model.load("./checkpoints/movenet_multipose_lightning_1")
+    movenet = movenet_model.signatures['serving_default']
+
     # begin video capture
     try:
         vid = cv2.VideoCapture(int(video_path))
@@ -67,6 +92,7 @@ def main(_argv):
     # while video is running
     while True:
         return_value, frame = vid.read()
+        movenet_frame = frame.copy()
         if return_value:
             frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         else:
@@ -79,6 +105,13 @@ def main(_argv):
         image_data = image_data[np.newaxis, ...].astype(np.float32)
         # start_time = time.time()
 
+        movenet_frame = tf.image.resize_with_crop_or_pad(tf.expand_dims(movenet_frame, axis=0), 384, 640)
+        movenet_frame = tf.cast(movenet_frame, dtype=tf.int32)
+        movenet_results = movenet(movenet_frame)
+        
+        bounding_boxes = movenet_results['output_0'].numpy()[:,:,51:56].reshape((6,1,5))
+        keypoints_with_scores = movenet_results['output_0'].numpy()[:,:,:51].reshape((6,17,3))
+        reinit_bboxes = loop_through_people(frame, keypoints_with_scores, 0.45, bounding_boxes)
 
         batch_data = tf.constant(image_data)
         # detection_time = time.time()
@@ -110,6 +143,10 @@ def main(_argv):
         # format bounding boxes from normalized ymin, xmin, ymax, xmax ---> xmin, ymin, width, height
         original_h, original_w, _ = frame.shape
         bboxes = utils.format_boxes(bboxes, original_h, original_w)
+
+        if reinit_bboxes is not None:
+            reinit_bboxes = utils.format_boxes([reinit_bboxes[0:4]], original_h, original_w)[0]
+
 
         # store all predictions in one parameter for simplicity when calling functions
         pred_bbox = [bboxes, scores, classes, num_objects]
@@ -164,10 +201,12 @@ def main(_argv):
 
         # update tracks
         for track in tracker.tracks:
-            if not track.is_confirmed() or track.time_since_update > 1:
+            if not track.is_confirmed(): #or track.track_id != 1: # or track.time_since_update > 1:
                 continue 
             bbox = track.to_tlbr()
             class_name = track.get_class()
+            print(reinit_bboxes)
+            print(bbox)
             
         # draw bbox on screen
             color = colors[int(track.track_id) % len(colors)]
