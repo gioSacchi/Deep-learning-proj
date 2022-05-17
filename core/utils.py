@@ -86,28 +86,52 @@ def get_anchors(anchors_path, tiny=False):
     else:
         return anchors.reshape(3, 3, 2)
 
-# helper function to convert bounding boxes from normalized ymin, xmin, ymax, xmax ---> xmin, ymin, xmax, ymax
-def format_boxes(bboxes, image_height, image_width):
+def get_ymin_ymax(box, image_height, image_width):
+    ymin = int(box[0] * image_height)
+    xmin = int(box[1] * image_width)
+    ymax = int(box[2] * image_height)
+    xmax = int(box[3] * image_width)
+    return ymin, xmin, ymax, xmax
+
+# helper function to convert bounding boxes from normalized ymin, xmin, ymax, xmax ---> xmin, ymin, width, height
+def format_boxes_x_y_w_h(bboxes, image_height, image_width):
     for box in bboxes:
-        ymin = int(box[0] * image_height)
-        xmin = int(box[1] * image_width)
-        ymax = int(box[2] * image_height)
-        xmax = int(box[3] * image_width)
+        ymin, xmin, ymax, xmax = get_ymin_ymax(box, image_height, image_width)
         width = xmax - xmin
         height = ymax - ymin
         box[0], box[1], box[2], box[3] = xmin, ymin, width, height
     return bboxes
 
-def format_boxes_yeyeye(bboxes, image_height, image_width):
+# helper function to convert bounding boxes from normalized ymin, xmin, ymax, xmax ---> xmin, ymin, xmax, ymax
+def format_boxes_x_y_x_y(bboxes, image_height, image_width):
     for box in bboxes:
-        ymin = int(box[0] * image_height)
-        xmin = int(box[1] * image_width)
-        ymax = int(box[2] * image_height)
-        xmax = int(box[3] * image_width)
-        width = xmax - xmin
-        height = ymax - ymin
+        ymin, xmin, ymax, xmax = get_ymin_ymax(box, image_height, image_width)
         box[0], box[1], box[2], box[3] = xmin, ymin, xmax, ymax
     return bboxes
+
+def iou(boxA, boxB):
+    # determine the (x, y)-coordinates of the intersection rectangle
+    xA = max(boxA[0], boxB[0])
+    yA = max(boxA[1], boxB[1])
+    xB = min(boxA[2], boxB[2])
+    yB = min(boxA[3], boxB[3])
+
+    # compute the area of intersection rectangle
+    interArea = abs(max((xB - xA, 0)) * max((yB - yA), 0))
+    if interArea == 0:
+        return 0
+    # compute the area of both the prediction and ground-truth
+    # rectangles
+    boxAArea = abs((boxA[2] - boxA[0]) * (boxA[3] - boxA[1]))
+    boxBArea = abs((boxB[2] - boxB[0]) * (boxB[3] - boxB[1]))
+
+    # compute the intersection over union by taking the intersection
+    # area and dividing it by the sum of prediction + ground-truth
+    # areas - the interesection area
+    iou = interArea / float(boxAArea + boxBArea - interArea)
+
+    # return the intersection over union value
+    return iou
 
 def bbox_iou(bboxes1, bboxes2):
     """
