@@ -95,6 +95,17 @@ def format_boxes(bboxes, image_height, image_width):
         xmax = int(box[3] * image_width)
         width = xmax - xmin
         height = ymax - ymin
+        box[0], box[1], box[2], box[3] = xmin, ymin, width, height
+    return bboxes
+
+def format_boxes_yeyeye(bboxes, image_height, image_width):
+    for box in bboxes:
+        ymin = int(box[0] * image_height)
+        xmin = int(box[1] * image_width)
+        ymax = int(box[2] * image_height)
+        xmax = int(box[3] * image_width)
+        width = xmax - xmin
+        height = ymax - ymin
         box[0], box[1], box[2], box[3] = xmin, ymin, xmax, ymax
     return bboxes
 

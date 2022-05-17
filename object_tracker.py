@@ -139,7 +139,7 @@ def main(_argv):
         image_data = image_data[np.newaxis, ...].astype(np.float32)
         # start_time = time.time()
 
-        movenet_frame = tf.image.resize_with_pad(tf.expand_dims(movenet_frame, axis=0), input_size, input_size)
+        movenet_frame = tf.image.resize_with_pad(tf.expand_dims(movenet_frame, axis=0), 384, 640)
         movenet_frame = tf.cast(movenet_frame, dtype=tf.int32)
         movenet_results = movenet(movenet_frame)
         
@@ -230,7 +230,7 @@ def main(_argv):
         # print("Tracker: ", (time.time() - track_time))
 
         if reinit_bboxes is not None:
-            reinit_bboxes = utils.format_boxes([reinit_bboxes[0:4]], original_h, original_w)[0]
+            reinit_bboxes = utils.format_boxes_yeyeye([reinit_bboxes[0:4]], original_h, original_w)[0]
             max_iou_track = get_max_iou_track(reinit_bboxes, tracker.tracks)
 
         # update tracks
