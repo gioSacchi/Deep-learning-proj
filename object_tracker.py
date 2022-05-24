@@ -273,7 +273,7 @@ class Object_Tracker():
         self.input_size = 416
 
         # saved_model_loaded = tf.saved_model.load('./checkpoints/yolov4-tiny-416', tags=[tag_constants.SERVING])
-        saved_model_loaded = load_model('./checkpoints/yolov4-tiny-416')
+        saved_model_loaded = load_model('./checkpoints/yolov4-tiny-416', compile=False)
         self.infer = saved_model_loaded.signatures['serving_default']
 
         # loading movenet model
@@ -401,6 +401,8 @@ class Object_Tracker():
         result = np.asarray(frame)
         result = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
         cv2.imshow("Output Video", result)
+        cv2.waitKey(0)
+        
         
         return None, [1]
 
