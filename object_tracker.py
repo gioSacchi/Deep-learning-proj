@@ -21,7 +21,10 @@ from tensorflow.compat.v1 import InteractiveSession
 # deep sort imports
 from deep_sort import preprocessing, nn_matching
 from deep_sort.detection import Detection
-from deep_sort.tracker import Tracker
+if not strong:
+    from deep_sort.tracker import Tracker
+else:   
+    from strong_sort.tracker import Tracker
 from tools import generate_detections as gdet
 flags.DEFINE_string('framework', 'tf', '(tf, tflite, trt')
 flags.DEFINE_string('weights', './checkpoints/yolov4-416',
@@ -101,7 +104,7 @@ def main(_argv):
             print('Video has ended or failed, try a different video format!')
             break
         frame_num +=1
-        print('Frame #: ', frame_num)
+        #print('Frame #: ', frame_num)
         frame_size = frame.shape[:2]
         image_data = cv2.resize(frame, (input_size, input_size))
         image_data = image_data / 255.
@@ -168,7 +171,7 @@ def main(_argv):
         for i in range(num_objects):
             class_indx = int(classes[i])
             class_name = class_names[class_indx]
-            if class_name not in allowed_classes:
+            if class_name not in allowed_classes or scores[i]<FLAGS.score:
                 deleted_indx.append(i)
             else:
                 names.append(class_name)
@@ -195,6 +198,10 @@ def main(_argv):
         classes = np.array([d.class_name for d in detections])
         indices = preprocessing.non_max_suppression(boxs, classes, nms_max_overlap, scores)
         detections = [detections[i] for i in indices]       
+
+        # Update tracker.
+        if opt.ECC:
+            tracker.camera_update(sequence_dir.split('/')[-1], frame_idx)
 
         # Call the tracker
         tracker.predict()
