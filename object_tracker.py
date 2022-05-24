@@ -383,9 +383,10 @@ class Object_Tracker():
         # update tracks
         for track in self.tracker.tracks:
             if not track.is_confirmed(): #or track.track_id != 1: # or track.time_since_update > 1:
+                # print("not confirmed", track)
                 continue
-            if not track.track_id == self.saved_id:
-                continue
+            # if not track.track_id == self.saved_id:
+            #     continue
             bbox = track.to_tlbr()
             class_name = track.get_class()
             print("reinit:", reinit_bboxes)
@@ -411,8 +412,17 @@ if __name__ == '__main__':
         # app.run(main)
         ob_tracker = Object_Tracker()
         from PIL import Image
-        with Image.open("./People.png") as im:
-            ob_tracker.image_track(im)
+        vid = cv2.VideoCapture(0)
+
+        while True:
+            return_value, frame = vid.read()
+            cv2_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            ob_tracker.image_track(Image.fromarray(cv2_frame))
+
+        # for image in os.scandir("./data/video/images"): 
+        #     # print(image.path)
+        #     with Image.open(image.path) as im:
+        #         ob_tracker.image_track(im)
 
     except SystemExit:
         pass
