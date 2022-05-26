@@ -23,6 +23,7 @@ from deep_sort.detection import Detection
 from deep_sort.tracker import Tracker
 from tools import generate_detections as gdet
 from tensorflow.python.keras.models import load_model
+from PIL import Image
 
 
 flags.DEFINE_string('weights', './checkpoints/yolov4-416',
@@ -281,9 +282,10 @@ class Object_Tracker():
         self.movenet = movenet_model.signatures['serving_default']
         self.saved_id = None
 
-        # begin video capture
-
     def image_track(self, image):
+        #For upscaling image, image should be from pillow
+        #image.resize((416, 416), Image.BICUBIC)
+
         frame = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2BGR) ## TODO test if we need this conversion
         frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
 
@@ -411,7 +413,6 @@ if __name__ == '__main__':
     try:
         # app.run(main)
         ob_tracker = Object_Tracker()
-        from PIL import Image
         vid = cv2.VideoCapture(0)
 
         while True:
