@@ -273,7 +273,7 @@ class Object_Tracker():
         self.input_size = 416
 
         # saved_model_loaded = tf.saved_model.load('./checkpoints/yolov4-tiny-416', tags=[tag_constants.SERVING])
-        saved_model_loaded = load_model('./checkpoints/yolov4-tiny-416', compile=False)
+        saved_model_loaded = load_model('./checkpoints/yolov4-416', compile=False)
         self.infer = saved_model_loaded.signatures['serving_default']
 
         # loading movenet model
@@ -405,24 +405,24 @@ class Object_Tracker():
         cv2.waitKey(0)
         
         
-        return None, [1]
+        return None, [1] #CenterX CenterY, Width Height
 
 if __name__ == '__main__':
     try:
         # app.run(main)
         ob_tracker = Object_Tracker()
         from PIL import Image
-        vid = cv2.VideoCapture(0)
+        # vid = cv2.VideoCapture(0)
 
-        while True:
-            return_value, frame = vid.read()
-            cv2_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-            ob_tracker.image_track(Image.fromarray(cv2_frame))
+        # while True:
+        #     return_value, frame = vid.read()
+        #     cv2_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        #     ob_tracker.image_track(Image.fromarray(cv2_frame))
 
-        # for image in os.scandir("./data/video/images"): 
-        #     # print(image.path)
-        #     with Image.open(image.path) as im:
-        #         ob_tracker.image_track(im)
+        for image in sorted(os.scandir("./data/video/images"), key=lambda x: x.path): 
+            # print(image.path)
+            with Image.open(image.path) as im:
+                ob_tracker.image_track(im)
 
     except SystemExit:
         pass
